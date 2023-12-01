@@ -12,5 +12,9 @@ defmodule ElvesStringParserTest do
     assert ElvesStringParser.extractNumbers("4nineeightseven2") == 42
     assert ElvesStringParser.extractNumbers("zoneight234") == 14
     assert ElvesStringParser.extractNumbers("7pqrstsixteen") == 76
+    assert ElvesStringParser.extractNumbers("one") == 11
+    assert ElvesStringParser.extractNumbers("zone") == 11
+    assert ElvesStringParser.extractNumbers("oone") == 11
+    assert ElvesStringParser.extractNumbers("twone") == 22
   end
 end
