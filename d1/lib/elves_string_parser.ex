@@ -18,14 +18,14 @@ defmodule ElvesStringParser do
   defp replaceStringNumbersNamesToNumbers(text) do
     case String.length(text) > 0 do
       true ->
-        t =
+        replacedStringToNumberIfExists =
           Enum.reduce(stringNumberToNumber(), text, fn {pattern, replacement}, acc ->
             String.replace(acc, ~r/^#{pattern}/, replacement)
           end)
 
         result = replaceStringNumbersNamesToNumbers(String.slice(text, 1, 1000))
 
-        [String.first(t), result]
+        [String.first(replacedStringToNumberIfExists), result]
         |> Enum.join()
 
       _ ->
@@ -39,11 +39,7 @@ defmodule ElvesStringParser do
   end
 
   def extractNumbers(lineOfText) do
-#    IO.inspect("--------------------")
-#    IO.inspect(lineOfText)
-
     replaceStringNumbersNamesToNumbers(lineOfText)
-#    |> IO.inspect()
     |> String.graphemes()
     |> Enum.filter(fn x ->
       case Integer.parse(x) do
@@ -56,7 +52,6 @@ defmodule ElvesStringParser do
     end)
     |> Enum.to_list()
     |> getTailAndHeadAndJoin
-#    |> IO.inspect()
     |> Integer.parse()
     |> case do
       {num, ""} -> num

@@ -8,6 +8,5 @@ defmodule D1 do
     |> String.split("\n", trim: true)
     |> Enum.map(fn x -> ElvesStringParser.extractNumbers(x) end)
     |> Enum.sum()
-    |> IO.inspect(label: "result")
   end
 end
