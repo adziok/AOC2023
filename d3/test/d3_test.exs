@@ -3,6 +3,6 @@ defmodule D3Test do
   doctest D3
 
   test "greets the world" do
-    assert D3.hello() == :world
+    assert D3.execute("./inputs/input.txt") == ""
   end
 end
