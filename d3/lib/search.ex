@@ -28,7 +28,6 @@ defmodule Search do
     end
   end
 
-
   def shouldBeCalculated(values, curr) do
     curr[:type] == :Number &&
       (mget?(getByCord(values, curr[:x] - 1, curr[:y] - 1), :type) == :Trigger ||
@@ -39,6 +38,70 @@ defmodule Search do
          mget?(getByCord(values, curr[:x] + 1, curr[:y] - 1), :type) == :Trigger ||
          mget?(getByCord(values, curr[:x] + 1, curr[:y]), :type) == :Trigger ||
          mget?(getByCord(values, curr[:x] + 1, curr[:y] + 1), :type) == :Trigger)
+  end
+
+  def shouldBeCalculated2stars(values, curr) do
+    curr[:type] == :Number &&
+      (mget?(getByCord(values, curr[:x] - 1, curr[:y] - 1), :cho) == true ||
+         mget?(getByCord(values, curr[:x] - 1, curr[:y]), :cho) == true ||
+         mget?(getByCord(values, curr[:x] - 1, curr[:y] + 1), :cho) == true ||
+         mget?(getByCord(values, curr[:x], curr[:y] - 1), :cho) == true ||
+         mget?(getByCord(values, curr[:x], curr[:y] + 1), :cho) == true ||
+         mget?(getByCord(values, curr[:x] + 1, curr[:y] - 1), :cho) == true ||
+         mget?(getByCord(values, curr[:x] + 1, curr[:y]), :cho) == true ||
+         mget?(getByCord(values, curr[:x] + 1, curr[:y] + 1), :cho) == true)
+  end
+
+  def getIds(values, curr) do
+      [mget?(getByCord(values, curr[:x] - 1, curr[:y] - 1), :id),
+         mget?(getByCord(values, curr[:x] - 1, curr[:y]), :id),
+         mget?(getByCord(values, curr[:x] - 1, curr[:y] + 1), :id) ,
+         mget?(getByCord(values, curr[:x], curr[:y] - 1), :id) ,
+         mget?(getByCord(values, curr[:x], curr[:y] + 1), :id) ,
+         mget?(getByCord(values, curr[:x] + 1, curr[:y] - 1), :id) ,
+         mget?(getByCord(values, curr[:x] + 1, curr[:y]), :id) ,
+         mget?(getByCord(values, curr[:x] + 1, curr[:y] + 1), :id)]
+         |> Enum.filter(fn d -> d != false && d != nil end)
+  end
+
+
+  def countNumberConnections(values, curr) do
+    left = case mget?(getByCord(values, curr[:x], curr[:y] - 1), :type) == :Number do
+      true -> 1
+      false -> 0
+    end
+    right = case mget?(getByCord(values, curr[:x], curr[:y] + 1), :type) == :Number do
+      true -> 1
+      false -> 0
+    end
+
+    top =
+      case mget?(getByCord(values, curr[:x] + 1, curr[:y] - 1), :type) == :Number ||
+             mget?(getByCord(values, curr[:x] + 1, curr[:y]), :type) == :Number ||
+             mget?(getByCord(values, curr[:x] + 1, curr[:y] + 1), :type) == :Number do
+        true -> cond do
+          mget?(getByCord(values, curr[:x] + 1, curr[:y] - 1), :type) == :Number &&
+          mget?(getByCord(values, curr[:x] + 1, curr[:y]), :type) != :Number &&
+          mget?(getByCord(values, curr[:x] + 1, curr[:y] + 1), :type) == :Number -> 2
+          true -> 1
+        end
+        false -> 0
+      end
+
+    bottom =
+      case mget?(getByCord(values, curr[:x] - 1, curr[:y] - 1), :type) == :Number ||
+             mget?(getByCord(values, curr[:x] - 1, curr[:y]), :type) == :Number ||
+             mget?(getByCord(values, curr[:x] - 1, curr[:y] + 1), :type) == :Number do
+        true -> cond do
+          mget?(getByCord(values, curr[:x] - 1, curr[:y] - 1), :type) == :Number &&
+          mget?(getByCord(values, curr[:x] - 1, curr[:y]), :type) != :Number &&
+          mget?(getByCord(values, curr[:x] - 1, curr[:y] + 1), :type) == :Number -> 2
+          true -> 1
+        end
+        false -> 0
+      end
+
+    left+right+bottom+top
   end
 
   def calculate(input) do
@@ -96,28 +159,28 @@ defmodule Search do
       end)
 
     values3 =
-    values2
-    |> Enum.map(fn v1 ->
-      v1
-      |> Enum.map(fn curr ->
-        next = getByCord(values2, curr[:x], curr[:y] + 1)
-        prev = getByCord(values2, curr[:x], curr[:y] - 1)
+      values2
+      |> Enum.map(fn v1 ->
+        v1
+        |> Enum.map(fn curr ->
+          next = getByCord(values2, curr[:x], curr[:y] + 1)
+          prev = getByCord(values2, curr[:x], curr[:y] - 1)
 
-        if(curr[:type] != :Number) do
-          curr
-        else
-          if(mget?(next, :dupa) == true) do
-            Map.merge(curr, %{dupa: true})
+          if(curr[:type] != :Number) do
+            curr
           else
-            if(mget?(prev, :dupa) == true) do
+            if(mget?(next, :dupa) == true) do
               Map.merge(curr, %{dupa: true})
             else
-              curr
+              if(mget?(prev, :dupa) == true) do
+                Map.merge(curr, %{dupa: true})
+              else
+                curr
+              end
             end
           end
-        end
+        end)
       end)
-    end)
 
     values4 =
       values3
@@ -144,24 +207,132 @@ defmodule Search do
       end)
 
     values4
-    |> List.flatten
+    |> List.flatten()
     |> Enum.filter(fn v -> v[:type] == :Number && v[:dupa] == true end)
     |> Enum.reduce("", fn el, acc ->
       cond do
-        el[:parentNumber] == false ->  "#{acc},#{el[:value]}"
-        true ->  "#{acc}#{el[:value]}"
+        el[:parentNumber] == false -> "#{acc},#{el[:value]}"
+        true -> "#{acc}#{el[:value]}"
       end
     end)
     |> String.split(",")
     |> Enum.filter(fn v -> String.length(v) > 0 end)
     |> Enum.map(fn v -> Integer.parse(v) end)
     |> Enum.map(fn v ->
-      v |> case do
+      v
+      |> case do
         {num, ""} -> num
       end
-     end)
-    |> Enum.sum
+    end)
+    |> Enum.sum()
+  end
+
+  def execute2(input) do
+    values = calculate(input)
+
+    values_2 =
+      values
+      |> Enum.map(fn v1 ->
+        v1
+        |> Enum.map(fn curr ->
+          if(curr[:value] == "*" && countNumberConnections(values, curr) == 2) do
+            Map.merge(curr, %{cho: true, id: "#{inspect make_ref()}"  })
+          else
+            curr
+          end
+        end)
+      end)
+
+    values2 =
+      values_2
+      |> Enum.map(fn v1 ->
+        v1
+        |> Enum.map(fn v ->
+          b = shouldBeCalculated2stars(values_2, v)
+          ids = getIds(values_2, v)
+          case b do
+            true ->
+              Map.merge(v, %{dupa: true, id: hd(ids)})
+            false->
+              Map.merge(v, %{dupa: false})
+          end
+        end)
+      end)
+      |> IO.inspect()
+
+    values3 =
+      values2
+      |> Enum.map(fn v1 ->
+        v1
+        |> Enum.map(fn curr ->
+          next = getByCord(values2, curr[:x], curr[:y] + 1)
+          prev = getByCord(values2, curr[:x], curr[:y] - 1)
+
+          if(curr[:type] != :Number) do
+            curr
+          else
+            if(mget?(next, :dupa) == true) do
+              Map.merge(curr, %{dupa: true, id: mget?(next, :id)})
+            else
+              if(mget?(prev, :dupa) == true) do
+                Map.merge(curr, %{dupa: true , id: mget?(prev, :id)})
+              else
+                curr
+              end
+            end
+          end
+        end)
+      end)
+
+    values4 =
+      values3
+      |> Enum.map(fn v1 ->
+        v1
+        |> Enum.map(fn curr ->
+          next = getByCord(values3, curr[:x], curr[:y] + 1)
+          prev = getByCord(values3, curr[:x], curr[:y] - 1)
+
+          if(curr[:type] != :Number) do
+            curr
+          else
+            if(mget?(next, :dupa) == true) do
+              Map.merge(curr, %{dupa: true, id: mget?(next, :id)})
+            else
+              if(mget?(prev, :dupa) == true) do
+                Map.merge(curr, %{dupa: true , id: mget?(prev, :id)})
+              else
+                curr
+              end
+            end
+          end
+        end)
+      end)
+
+    values4
+      |> List.flatten()
+      |> Enum.filter(fn v -> v[:type] == :Number && v[:dupa] == true end)
+      |> Enum.reduce("", fn el, acc ->
+        cond do
+          el[:parentNumber] == false -> "#{acc},[#{el[:id]}]:#{el[:value]}"
+          true -> "#{acc}#{el[:value]}"
+        end
+      end)
+      |> String.split(",")
+      |> Enum.filter(fn v -> String.length(v) > 0 end)
+      |> Enum.group_by(fn v -> hd(String.split(v, ":")) end, fn v -> List.last(String.split(v, ":")) end)
+      |> IO.inspect()
+      |> Map.values()
+      |> Enum.map(fn v2 ->
+        v2
+        |> Enum.map(fn v -> Integer.parse(v) end)
+        |> Enum.map(fn v ->
+          v
+          |> case do
+            {num, ""} -> num
+          end
+        end)
+        |> Enum.reduce(fn l, acc -> l*acc end)
+      end)
+      |> Enum.sum()
   end
 end
-
-# %{type: :Number, value: "3", y: 2, x: 0, parentNumber: %{y: 1, x: 0}}
