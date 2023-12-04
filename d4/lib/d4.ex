@@ -47,10 +47,10 @@ defmodule D4 do
           Enum.member?(x[:winning], el)
         end)
 
-      Map.merge(x, %{
+      %{
+        id: x[:id],
         matchingElementsCount: length(matchingElements),
-        matchingElements: matchingElements
-      })
+      }
     end)
     |> CountCardsRec.execute()
   end

@@ -7,7 +7,7 @@ defmodule CountCardsRec do
   def count(elements, index) do
     el =
       elements
-      |> Enum.find(fn e -> e[:id] == index end)
+      |> Enum.at(index-1)
 
     if el == nil do
       0
