@@ -1,175 +1,166 @@
 defmodule Parser do
-
-  #["temperature-to-humidity", "3056037605 2829211160 523334807"]
-  def get_value(values, index) do
-    [h | ranges] = values
-
-    range = ranges
-    |> Enum.map(fn e ->
-      e
-      |> String.split(" ")
-      |> Enum.map(fn i ->
-        i
-        |> Integer.parse()
-        |> case do
-          {num, ""} -> num
-        end
+  def get_value(ranges, index) do
+    range =
+      ranges
+      |> Enum.map(fn e ->
+        e
+        |> String.split(" ")
+        |> Enum.map(fn i ->
+          i
+          |> Integer.parse()
+          |> case do
+            {num, ""} -> num
+          end
+        end)
       end)
-    end)
-    |> Enum.filter(fn e ->
-      [id, eid, count] = e
-      eid <= index && eid + count - 1 >= index
-    end)
+      |> Enum.filter(fn e ->
+        [_id, eid, count] = e
+        eid <= index && eid + count - 1 >= index
+      end)
 
-    if(hd(range) == nil) do
+    if(length(range) == 0 || hd(range) == nil) do
       index
     else
-      [eid, id, count] = hd(range)
+      [eid, id, _count] = hd(range)
       move_count = index - id
       eid + move_count
     end
   end
 
-  # ["seed-to-soil", "50 98 2", "52 50 48"] => ${1=>2, 3=>5}
-  def map_parser2(values) do
-    [h | ranges] = values
-
-    defined_ranges = ranges
-    |> Enum.map(fn e ->
-      e
-      |> String.split(" ")
-      |> Enum.map(fn i ->
-        i
-        |> Integer.parse()
-        |> case do
-          {num, ""} -> num
-        end
-      end)
-    end)
-    |> Enum.map(fn e ->
-      [id, eid, count] = e
-
-      0..count
-      |> Enum.map(fn a ->
-        {eid + a, id + a}
-      end)
-    end)
-    |> List.flatten()
-    |> Map.new
-  end
-
-  # ["seed-to-soil", "50 98 2", "52 50 48"] => ["seed-to-soil", {1,1}, {2,2}]
-  def map_parser(values, max_value) do
-    [h | ranges] = values
-
-    defined_ranges = ranges
-    |> Enum.map(fn e ->
-      e
-      |> String.split(" ")
-      |> Enum.map(fn i ->
-        i
-        |> Integer.parse()
-        |> case do
-          {num, ""} -> num
-        end
-      end)
-    end)
-    |> Enum.map(fn e ->
-      [id, eid, count] = e
-
-      0..count
-      |> Enum.map(fn a ->
-        {id + a, eid + a }
-      end)
-    end)
-    |> List.flatten()
-    |> Map.new
-
-    l = 0..max_value
-    |> Enum.map(fn i ->
-      if(defined_ranges[i] != nil) do
-        {i,defined_ranges[i]}
-      else
-        {i,i}
-      end
-    end)
-    [h] ++ l
-  end
-
   def execute(mappings, type, prev_value) do
     mapper = mappings[type]
 
-    if(mapper != nil) do
-      execute(mappings, mapper[:to], mapper[:mappings][prev_value] || prev_value)
+    if(mapper[:mappings] != nil) do
+      execute(mappings, mapper[:to], get_value(mapper[:mappings], prev_value))
     else
       prev_value
     end
   end
 
   def parse(text) do
-    preprocessed_text = text
-    |> String.split("\n\n", trim: true)
-    |> Enum.map(fn raw_row ->
-      raw_row
-      |> String.split("\n", trim: true)
-    end)
-    |> Enum.map(fn el ->
-      if(length(el) == 1) do
-        List.first(el)
+    preprocessed_seeds_numbers =
+      hd(
+        text
+        |> String.split("\n\n", trim: true)
+      )
+
+    [_h | seed_numbers] =
+      String.split(preprocessed_seeds_numbers, "\n", trim: true)
+      |> Enum.map(fn el ->
+        el
         |> String.split(":", trim: true)
         |> Enum.map(fn e ->
           e
           |> String.split(" ", trim: true)
         end)
-        |> List.flatten()
-      else
-        el
-        |> Enum.map(fn e ->
-          e
-          |> String.replace(" map:", "")
-        end)
-      end
-    end)
+      end)
+      |> List.flatten()
 
+    n_seed_numbers =
+      seed_numbers
+      |> Enum.map(fn i ->
+        i
+        |> Integer.parse()
+        |> case do
+          {num, ""} -> num
+        end
+      end)
 
-    [seeds | maps] =
-    preprocessed_text
+    parse_impl(text, n_seed_numbers)
+  end
 
-    [h |seed_numbers]=
-      hd(preprocessed_text)
+  def parse_impl(text, n_seed_numbers) do
+    preprocessed_text =
+      text
+      |> String.split("\n\n", trim: true)
+      |> Enum.map(fn raw_row ->
+        raw_row
+        |> String.split("\n", trim: true)
+      end)
+      |> Enum.map(fn el ->
+        if(length(el) == 1) do
+          List.first(el)
+          |> String.split(":", trim: true)
+          |> Enum.map(fn e ->
+            e
+            |> String.split(" ", trim: true)
+          end)
+          |> List.flatten()
+        else
+          el
+          |> Enum.map(fn e ->
+            e
+            |> String.replace(" map:", "")
+          end)
+        end
+      end)
 
-    n_seed_numbers = seed_numbers
-    |> Enum.map(fn i ->
-      i
-      |> Integer.parse()
-      |> case do
-        {num, ""} -> num
-      end
-    end)
-
-    get_value(hd(maps), 99)
-    |> IO.inspect()
-
+    [_seeds | maps] =
+      preprocessed_text
 
     mappers =
       maps
       |> Enum.map(fn map ->
-        [title| mappings] = map
-        [String.split(title, "-to-"), map_parser2(map)]
+        [title | mappings] = map
+
+        [String.split(title, "-to-"), mappings]
         |> List.flatten()
       end)
       |> Enum.map(fn m ->
-        [from, to, mappings] = m
-        {from, %{to: to, mappings: mappings }}
+        [from, to | mappings] = m
+        {from, %{to: to, mappings: mappings}}
       end)
-      |> Map.new
+      |> Map.new()
 
     n_seed_numbers
     |> Enum.map(fn e ->
       execute(mappers, "seed", e)
     end)
     |> List.flatten()
-    # |> Enum.min_by(fn e -> e end)
+    |> Enum.min_by(fn e -> e end)
+  end
 
+  def parse_range(text) do
+    preprocessed_seeds_numbers =
+      hd(
+        text
+        |> String.split("\n\n", trim: true)
+      )
+
+    [_h | seed_numbers] =
+      String.split(preprocessed_seeds_numbers, "\n", trim: true)
+      |> Enum.map(fn el ->
+        el
+        |> String.split(":", trim: true)
+        |> Enum.map(fn e ->
+          e
+          |> String.split(" ", trim: true)
+        end)
+      end)
+      |> List.flatten()
+
+    n_seed_numbers =
+      seed_numbers
+      |> Enum.map(fn i ->
+        i
+        |> Integer.parse()
+        |> case do
+          {num, ""} -> num
+        end
+      end)
+      |> Enum.chunk_every(2)
+      |> Enum.map(fn e ->
+        [start, count] = e
+        start..start+count
+      end)
+      |> IO.inspect()
+      |> Enum.map(fn e ->
+        IO.inspect(e)
+        parse_impl(text, e)
+      end)
+      |> List.flatten()
+      # |> IO.inspect()
+
+    # IO.inspect(n_seed_number)
   end
 end

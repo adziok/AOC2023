@@ -1,24 +1,6 @@
 defmodule ParserTest do
   use ExUnit.Case
 
-  test "parser in range" do
-    assert Parser.map_parser(["seed-to-soil", "5 10 1", "7 13 1"], 10) == [
-      "seed-to-soil",
-      {0, 0},
-      {1, 1},
-      {2, 2},
-      {3, 3},
-      {4, 4},
-      {5, 10},
-      {6, 11},
-      {7, 13},
-      {8, 14},
-      {9, 9},
-      {10, 10},
-    ]
-  end
-
-
   test "parser only maped" do
     assert Parser.map_parser2(["seed-to-soil", "50 98 2", "52 50 48"]) == %{
       50 => 52,
