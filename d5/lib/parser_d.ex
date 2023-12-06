@@ -9,6 +9,8 @@ defmodule ParserD do
           ParserC.parse_seeds(range, mapper)
         end)
         |> Enum.flat_map(fn x -> x end)
+        |> Enum.sort_by(fn [d, b] -> d end)
+        |> Enum.uniq_by(fn [d, b] -> [d, b] end)
 
       execute2(mappings, mapper[:to], next_ranges)
     else
@@ -52,12 +54,15 @@ defmodule ParserD do
     d =
       execute2(mapper, "seed", seeds_ranges)
 
-    e = d
-    |> List.flatten()
-    |> Enum.filter(fn e -> e < 58952912 end)
-    |> Enum.filter(fn e -> e > 6577900 end)
-    |> Enum.uniq()
-    |> Enum.sort()
+    e =
+      d
+      |> List.flatten()
+      |> Enum.filter(fn e -> e < 58_952_912 end)
+      |> Enum.filter(fn e -> e > 6_577_900 end)
+      |> Enum.filter(fn d -> d != 27_361_067 end)
+      |> Enum.uniq()
+      |> Enum.sort()
+      |> IO.inspect()
 
     IO.inspect(length(e))
 

@@ -7,7 +7,7 @@ defmodule D5Test do
   end
 
   test "part 1" do
-    assert D5.part1("./inputs/input.txt") == 107430936
+    assert D5.part1("./inputs/input.txt") == 107_430_936
   end
 
   test "part 2 test" do
@@ -17,6 +17,6 @@ defmodule D5Test do
   @tag timeout: 6000_000
   test "part 2" do
     ExUnit.configure(timeout: 6000_000)
-    assert D5.part2_final("./inputs/input.txt") == 107430936
+    assert D5.part2_final("./inputs/input.txt") == 107_430_936
   end
 end

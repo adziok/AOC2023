@@ -38,7 +38,8 @@ defmodule ParserC do
           range[:id] > start_range_id && range[:id] < end_range_id ->
             [range[:from] + range[:shift], range[:to] + range[:shift]]
 
-          true -> nil
+          true ->
+            nil
         end
       end)
       |> Enum.filter(fn a -> a != nil end)
