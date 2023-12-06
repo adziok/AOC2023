@@ -5,15 +5,15 @@ defmodule D5 do
       {:ok, content} -> content
       {:error, reason} -> raise reason
     end
-    |> Parser.parse
+    |> Parser.parse()
   end
 
-  def part2(inputPath) do
+  def part2_final(inputPath) do
     File.read(inputPath)
     |> case do
       {:ok, content} -> content
       {:error, reason} -> raise reason
     end
-    |> Parser.parse_range
+    |> ParserD.execute()
   end
 end
