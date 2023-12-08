@@ -6,7 +6,6 @@ defmodule CountSteps do
 
       Map.get(regions[curr_region], String.to_atom(Enum.at(steps, step_i))) == look_for ->
         iteration
-        |> IO.inspect()
 
       true ->
         find_i(
