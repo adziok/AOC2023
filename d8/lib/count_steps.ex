@@ -6,6 +6,7 @@ defmodule CountSteps do
 
       Map.get(regions[curr_region], String.to_atom(Enum.at(steps, step_i))) == look_for ->
         iteration
+        |> IO.inspect()
 
       true ->
         find_i(
@@ -23,39 +24,27 @@ defmodule CountSteps do
     find_i(steps, 0, regions, start, finish, 1)
   end
 
-  def find_i_many(steps, step_i, regions, curr_regions, look_for, iteration) do
-    IO.inspect(curr_regions)
-    IO.inspect(look_for)
-    IO.inspect(iteration)
+  def find_i_f(steps, step_i, regions, curr_region, look_for, iteration) do
     cond do
       length(steps) == step_i ->
-        find_i_many(steps, 0, regions, curr_regions, look_for, iteration)
+        find_i_f(steps, 0, regions, curr_region, look_for, iteration)
 
-      length(
-        (curr_regions
-         |> Enum.map(fn curr_region ->
-           Map.get(regions[curr_region], String.to_atom(Enum.at(steps, step_i)))
-         end)) --
-            look_for
-      ) == 0 ->
+      String.at(Map.get(regions[curr_region], String.to_atom(Enum.at(steps, step_i))), 2) == "Z" ->
         iteration
 
       true ->
-        find_i_many(
+        find_i_f(
           steps,
           step_i + 1,
           regions,
-          curr_regions
-          |> Enum.map(fn curr_region ->
-            Map.get(regions[curr_region], String.to_atom(Enum.at(steps, step_i)))
-          end),
+          Map.get(regions[curr_region], String.to_atom(Enum.at(steps, step_i))),
           look_for,
           iteration + 1
         )
     end
   end
 
-  def count_many(steps, regions, start, finish) do
-    find_i_many(steps, 0, regions, start, finish, 1)
+  def count_f(steps, regions, start, finish) do
+    find_i_f(steps, 0, regions, start, finish, 1)
   end
 end
