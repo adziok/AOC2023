@@ -16,6 +16,6 @@ defmodule D7Test do
   end
 
   test "part2 real" do
-    assert D7.part2("./inputs/input.txt") == 6440
+    assert D7.part2("./inputs/input.txt") == 251037509
   end
 end
