@@ -10,7 +10,7 @@ defmodule D10Test do
     assert D10.part1("./inputs/input2.txt") == 8
   end
 
-  # test "P1 3" do
-  #   assert D10.part1("./inputs/input.txt") == :world
-  # end
+  test "P1 3" do
+    assert D10.part1("./inputs/input.txt") == 6864
+  end
 end
