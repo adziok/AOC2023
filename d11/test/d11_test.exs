@@ -15,7 +15,7 @@ defmodule D11Test do
   end
 
   test "P2 2" do
-    assert D11.part2("./inputs/input2.txt", 100, 100) == 8410
+    assert D11.part2("./inputs/input2.txt", 10, 100) == 8410
   end
 
   test "P2 3" do
