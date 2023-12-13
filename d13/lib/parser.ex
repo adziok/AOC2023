@@ -6,8 +6,7 @@ defmodule Parser do
   end
 
   def parse(texts) do
-    IO.inspect(length(texts    |> String.split("\n\n", trim: true)))
-
+    IO.inspect(length(texts |> String.split("\n\n", trim: true)))
 
     vertical_mir =
       texts
@@ -27,7 +26,8 @@ defmodule Parser do
         |> length() > 1
       end)
       |> IO.inspect()
-      IO.inspect(length(vertical_mir))
+
+    IO.inspect(length(vertical_mir))
 
     horizontal_mir =
       texts
@@ -55,9 +55,10 @@ defmodule Parser do
         end)
         |> length() > 1
       end)
-      # |> IO.inspect()
 
-      IO.inspect(length(horizontal_mir))
+    # |> IO.inspect()
+
+    IO.inspect(length(horizontal_mir))
 
     h_c =
       horizontal_mir
@@ -108,7 +109,7 @@ defmodule Parser do
       {_, curr_i} = Enum.at(list, el_i)
       {_, next_i} = Enum.at(list, el_i + 1)
 
-      if curr_i + 1 == next_i  do
+      if curr_i + 1 == next_i do
         true
       else
         has_elements_with_index_one_after_another(list, el_i + 1)
