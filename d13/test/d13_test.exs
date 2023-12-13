@@ -11,7 +11,7 @@ defmodule D13Test do
   end
 
   test "P1 2" do
-    assert D13.part1("./inputs/input.txt") == 10_422_930
+    assert D13.part1("./inputs/input.txt") == 27202
   end
 
   # test "P2 1" do
