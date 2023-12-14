@@ -5,9 +5,7 @@ defmodule D13 do
       {:ok, content} -> content
       {:error, reason} -> raise reason
     end
-    |> Parser2.parse()
-
-    # |> PathLenghtFinder.find()
+    |> Parser.parse()
   end
 
   def part2(inputPath) do
@@ -16,8 +14,6 @@ defmodule D13 do
       {:ok, content} -> content
       {:error, reason} -> raise reason
     end
-
-    # |> Parser.parse()
-    # |> PathLenghtFinder.find(divider, multipler)
+    |> Parser2.parse()
   end
 end

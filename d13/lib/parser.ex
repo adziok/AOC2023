@@ -5,9 +5,26 @@ defmodule Parser do
     Enum.zip(m) |> Enum.map(&Tuple.to_list/1)
   end
 
-  def parse(texts) do
-    IO.inspect(length(texts |> String.split("\n\n", trim: true)))
+  def eee2(list) do
+    list
+    |> Enum.map(fn list ->
+      if(rem(length(list), 2) == 1) do
+        1..(length(list) - 1)
+        |> Enum.map(fn e -> explore(list, e - 1, 0) end)
+        |> List.flatten()
+        |> Enum.filter(fn e -> e != false end)
+      else
+        1..(length(list) - 1)
+        |> Enum.map(fn e -> explore(list, e - 1, 0) end)
+        |> Enum.filter(fn e -> e != false end)
 
+        # explore(list, m - 1, 0)
+      end
+    end)
+    |> List.flatten()
+  end
+
+  def parse(texts) do
     vertical_mir =
       texts
       |> String.split("\n\n", trim: true)
@@ -15,19 +32,12 @@ defmodule Parser do
         text
         |> String.split("\n", trim: true)
         |> Enum.with_index()
-        |> Enum.group_by(fn {value, _index} -> value end)
       end)
-      |> Enum.filter(fn e ->
-        e
-        |> Enum.to_list()
-        |> Enum.filter(fn {_, list} ->
-          rem(length(list), 2) == 1
-        end)
-        |> length() > 1
+      |> eee2()
+      |> Enum.map(fn d ->
+        (d + 1) * 100
       end)
-      |> IO.inspect()
-
-    IO.inspect(length(vertical_mir))
+      |> Enum.sum()
 
     horizontal_mir =
       texts
@@ -45,61 +55,48 @@ defmodule Parser do
           |> Enum.join("")
         end)
         |> Enum.with_index()
-        |> Enum.group_by(fn {value, _index} -> value end)
       end)
-      |> Enum.filter(fn e ->
-        e
-        |> Enum.to_list()
-        |> Enum.filter(fn {_, list} ->
-          rem(length(list), 2) == 1
-        end)
-        |> length() > 1
-      end)
-
-    # |> IO.inspect()
-
-    IO.inspect(length(horizontal_mir))
-
-    h_c =
-      horizontal_mir
-      |> Enum.map(fn hor ->
-        hor
-        |> Enum.to_list()
-        |> Enum.find(fn {_, list} ->
-          if length(list) == 1 do
-            false
-          else
-            has_elements_with_index_one_after_another(list, 0)
-          end
-        end)
-        |> extract_index_and_multiple(1)
+      |> eee2()
+      |> Enum.map(fn d ->
+        d + 1
       end)
       |> Enum.sum()
 
-    v_c =
-      vertical_mir
-      |> Enum.map(fn hor ->
-        hor
-        |> Enum.to_list()
-        |> Enum.find(fn {_, list} ->
-          if length(list) == 1 do
-            false
-          else
-            has_elements_with_index_one_after_another(list, 0)
-          end
-        end)
-        |> extract_index_and_multiple(100)
-      end)
-      |> Enum.sum()
+    horizontal_mir + vertical_mir
+  end
 
-    h_c + v_c
+  def explore(list, center_index, shift) do
+    is_odd = rem(length(list), 2) == 0
+
+    odd_true_case =
+      is_odd && (center_index - shift < 0 || center_index + shift + 1 >= length(list))
+
+    nodd_true_case =
+      !is_odd && (center_index - shift < 0 || center_index + shift + 1 == length(list))
+
+    if odd_true_case || nodd_true_case do
+      center_index
+    else
+      {left_value, li} = Enum.at(list, center_index - shift)
+      {right_value, ri} = Enum.at(list, center_index + shift + 1)
+
+      if left_value == right_value do
+        explore(list, center_index, shift + 1)
+      else
+        false
+      end
+    end
   end
 
   def extract_index_and_multiple(d, multiple) do
-    {_, list} = d
-    {_, mirror_index_start} = Enum.at(list, 0)
+    if d != nil do
+      {_, list} = d
+      {_, mirror_index_start} = Enum.at(list, 0)
 
-    (mirror_index_start + 1) * multiple
+      (mirror_index_start + 1) * multiple
+    else
+      0
+    end
   end
 
   def has_elements_with_index_one_after_another(list, el_i) do
